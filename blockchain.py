@@ -7,12 +7,12 @@ from uuid import uuid4
 from flask import Flask , jsonify , request, render_template
 from time import time
 from flask_cors import CORS
+
 class Blockchain():
     def __init__(self):
         self.chain = []
         self.current_transactions= []
         self.nodes = set()
-
         #genesis block
         self.new_block(previous_hash=1, proof=100)
 
@@ -26,8 +26,8 @@ class Blockchain():
         }
         self.current_transactions=[]
         self.chain.append(block)
-
         return block
+
     def new_transaction(self, voter_aid, party):
         self.current_transactions.append(
             {
@@ -36,10 +36,12 @@ class Blockchain():
             }
         )
         return self.last_block['index']+1
+
     @staticmethod
     def hash(block):
         block_string = json.dumps(block , sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
+
     @property
     def last_block(self):
         return self.chain[-1] 
@@ -48,6 +50,7 @@ class Blockchain():
         while self.valid_proof(last_proof, proof) is False:
             proof+=1
         return proof
+
     @staticmethod
     def valid_proof(last_proof, proof):
         guess = f'{last_proof}{proof}'.encode()
@@ -100,7 +103,7 @@ class Blockchain():
 
     def triggered_flood_chain(self):
         for node in self.nodes:
-            response = requests.get(f'http://{node}/nodes/resolve')
+            requests.get(f'http://{node}/nodes/resolve')
 
     def trigger_flood_nodes(self,address):
         print('flooding now ')
@@ -109,6 +112,7 @@ class Blockchain():
                 'nodes': [address] ,
                 'flag': 0
             })
+
     def tally_votes(self):
         votes = {}
         for block in self.chain:
@@ -136,7 +140,9 @@ class Blockchain():
                     return True
         else:
             return False
-# flask api code here
+
+
+# Flask API code here
 
 app = Flask(__name__)
 node_identifier = str(uuid4()).replace('-', '')
@@ -172,6 +178,7 @@ def full_transactions():
     return jsonify({
         'transactions': blockchain.current_transactions
     })
+
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
@@ -195,7 +202,6 @@ def full_chain():
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
     }
-
     return jsonify(response), 200
 
 @app.route('/nodes', methods=['GET'])
@@ -203,6 +209,7 @@ def full_nodes():
     return jsonify({
         'nodes': list(blockchain.nodes)
     })
+
 @app.route('/nodes/register', methods= ['POST'])
 def register_nodes():
     values = request.get_json()
@@ -238,7 +245,6 @@ def consensus():
             'message': 'Our chain is authoritative',
             'chain': blockchain.chain,
         }
-
     return jsonify(response), 200
 
 @app.route('/verify/<int:aid>', methods = ['GET'])
@@ -246,4 +252,5 @@ def verify_vote(aid):
     print(blockchain.verify_vote(aid))
     return jsonify(blockchain.verify_vote(aid))
 
-app.run(host='0.0.0.0', port=random.randint(5001,5009), debug=True)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=random.randint(5001,5009), debug=True)
