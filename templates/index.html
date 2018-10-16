@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body class="w3-black w3-content">
+
+    <div>
+    <form class="w3-content w3-padding-large">
+        <h3>Response: </h3>
+        <textarea class="w3-input" readonly id="response"></textarea>
+        <br>
+        <button type="button" class="w3-button w3-teal" id="clearBtn">Clear</button>
+        <br>
+        <i class="fa fa-spinner w3-spin w3-center" style="font-size:64px" id="loader"></i>
+        <br>
+        <label>Address: </label>
+        <input class="w3-input w3-border" type="text" id="address">
+        <label>Port: </label>
+        <input class="w3-input w3-border" type="number" id="port">
+        <br>
+        <button type="button" class="w3-button w3-teal" id="getNodesBtn">Get Nodes</button>
+        <button type="button" class="w3-button w3-teal" id="getTransBtn">Get Transactions</button>
+        <button type="button" class="w3-button w3-teal" id="getChainBtn">Get Blockchain</button>
+    </form>
+
+    <hr>
+
+    <form class="w3-content w3-padding-large" id="nodesForm">
+        <label>Node Address: </label>
+        <input class="w3-input w3-border" type="text" name="nodes" id="nodes">
+        <br>
+        <button type="button" class="w3-button w3-teal" id="addNodesBtn">Add Nodes</button>
+    </form>
+
+    <hr>
+
+    <form class="w3-content w3-padding-large" id="transactionForm">
+            <label>Party: </label>
+            <input class="w3-input w3-border" type="text" name="party" id="party">
+            <label>Voter ID: </label>
+            <input class="w3-input w3-border" type="number" name="voter_aid" id="voter_aid">
+            <br>
+            <button type="button" class="w3-button w3-teal" id="addTransBtn">Add Transaction</button>
+            <button type="button" class="w3-button w3-teal" id="mineBtn">Mine</button>
+    </form>
+
+    <script>
+        $("#loader").hide();
+        $("#clearBtn").click(function(){
+            $("#response").val("");
+        });
+        $("#getTransBtn").click(function(){
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            $.ajax({
+                type: "GET",
+                url:  destination + "/transactions",
+                success: function(response) {
+                    console.log(response);
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+        $("#getNodesBtn").click(function(){
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            $.ajax({
+                type: "GET",
+                url: destination + "/nodes",
+                success: function(response) {
+                    console.log(response)
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+        $("#mineBtn").click(function() {
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            $.ajax({
+                type: "GET",
+                url: destination + "/mine",
+                success: function(response) {
+                    console.log(response);
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+        $("#getChainBtn").click(function(){
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            $.ajax({
+                type: "GET",
+                url: destination + "/chain",
+                success: function(response) {
+                    console.log(response)
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+
+        $("#addTransBtn").click(function(){
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            var party = $("#party").val();
+            var voter_aid = $("#voter_aid").val();
+            var object = { "party" : party, "voter_aid": voter_aid};
+            console.log(object);
+            $.ajax({
+                type: "POST",
+                url: destination + "/transactions/new",
+                contentType: "application/json;charset=UTF-8",
+                data: JSON.stringify(object),
+                success: function(response) {
+                    console.log(response);
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+
+        $("#addNodesBtn").click(function(){
+            destination = "http://" + $("#address").val() +":"+ $("#port").val();
+            $("#loader").show();
+            var source = $("#nodes").val();
+            var object = { "nodes" : [destination], "flag": 1};
+            console.log(object);
+            $.ajax({
+                type: "POST",
+                url: source + "/nodes/register",
+                contentType: "application/json;charset=UTF-8",
+                data: JSON.stringify(object),
+                success: function(response) {
+                    console.log(response);
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+            object = { "nodes" : [source], "flag": 1};
+            $.ajax({
+                type: "POST",
+                url: destination + "/nodes/register",
+                contentType: "application/json;charset=UTF-8",
+                data: JSON.stringify(object),
+                success: function(response) {
+                    console.log(response);
+                    $("#response").val(JSON.stringify(response, null, "\t"));
+                    $("#loader").hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
