@@ -4,8 +4,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-ip = '172.16.40.115'
+ip = 'localhost'
+ip = input('Enter IP of a node: ')
 port = 5001
+port = int(input('Enter port of a node: '))
 
 @app.route("/")
 def index():
